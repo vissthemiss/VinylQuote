@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinyl Pressing Quote Form</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+      (function() {
+        emailjs.init("F3h1sW_SGeTz7B-vp"); 
+      })();
+    </script>
+    
+    <style>
+        :root {
+            --bg-color: #121212; --card-bg: #1e1e1e; --text-main: #ffffff;
+            --text-muted: #a0a0a0; --accent: #ff4d00; --accent-hover: #e04400;
+            --border: #333333; --input-bg: #2a2a2a; --success: #00c853;
+            --radius: 8px; --font-main: 'Inter', sans-serif; --font-mono: 'Space Mono', monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-main); background-color: var(--bg-color);
+            color: var(--text-main); line-height: 1.6; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center; padding: 20px;
+        }
+        header { text-align: center; margin-bottom: 40px; max-width: 600px; }
+        h1 { font-size: 2rem; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.5px; }
+        .subtitle { color: var(--text-muted); font-size: 1rem; }
+        .container {
+            width: 100%; max-width: 800px; background: var(--card-bg);
+            border-radius: var(--radius); padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--border);
+        }
+        .progress-container { margin-bottom: 30px; }
+        .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); width: 33%; transition: width 0.3s ease; }
+        .step-indicator {
+            display: flex; justify-content: space-between; margin-top: 8px;
+            font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);
+        }
+        .form-section { display: none; animation: fadeIn 0.4s ease; }
+        .form-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .section-title {
+            font-size: 1.25rem; border-bottom: 1px solid var(--border);
+            padding-bottom: 10px; margin-bottom: 20px; color: var(--accent);
+            text-transform: uppercase; letter-spacing: 1px; font-family: var(--font-mono);
+        }
+        .form-group { margin-bottom: 24px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.95rem; }
+        .helper-text { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; display: block; }
+        input[type="text"], input[type="email"], textarea, select {
+            width: 100%; padding: 12px; background: var(--input-bg);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            color: var(--text-main); font-family: var(--font-main); font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+        textarea { resize: vertical; min-height: 100px; }
+        .radio-group, .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; }
+        .radio-option, .checkbox-option { position: relative; }
+        .radio-option input, .checkbox-option input { position: absolute; opacity: 0; cursor: pointer; }
+        .radio-btn, .checkbox-btn {
+            display: inline-block; padding: 10px 20px; background: var(--input-bg);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            cursor: pointer; transition: all 0.2s; font-size: 0.9rem; user-select: none;
+        }
+        .radio-option input:checked + .radio-btn,
+        .checkbox-option input:checked + .checkbox-btn {
+            background: var(--accent); border-color: var(--accent); color: white; font-weight: 600;
+        }
+        .radio-option input:disabled + .radio-btn,
+        .checkbox-option input:disabled + .checkbox-btn {
+            opacity: 0.5; cursor: not-allowed; text-decoration: line-through;
+        }
+        .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+        .color-option { position: relative; cursor: pointer; }
+        .color-option input { position: absolute; opacity: 0; }
+        .swatch {
+            width: 100%; padding-top: 100%; border-radius: 50%;
+            border: 2px solid var(--border); position: relative;
+            transition: transform 0.2s, border-color 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .color-label { text-align: center; font-size: 0.75rem; margin-top: 6px; color: var(--text-muted); line-height: 1.2; }
+        .color-option input:checked + .swatch {
+            border-color: var(--text-main); transform: scale(1.1); box-shadow: 0 0 0 2px var(--accent);
+        }
+        .btn-container {
+            display: flex; justify-content: space-between; margin-top: 40px;
+            padding-top: 20px; border-top: 1px solid var(--border);
+        }
+        button {
+            padding: 12px 24px; border-radius: var(--radius); border: none;
+            font-weight: 600; cursor: pointer; font-size: 1rem; transition: background 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+        .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-secondary:hover { border-color: var(--text-main); color: var(--text-main); }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 600px) { .summary-grid { grid-template-columns: 1fr; } }
+        .summary-item {
+            background: var(--input-bg); padding: 15px;
+            border-radius: var(--radius); border: 1px solid var(--border);
+        }
+        .summary-label {
+            font-size: 0.75rem; text-transform: uppercase;
+            color: var(--text-muted); margin-bottom: 5px; font-family: var(--font-mono);
+        }
+        .summary-value { font-weight: 600; font-size: 0.95rem; }
+        .summary-list { list-style: none; font-size: 0.9rem; color: var(--text-muted); }
+        .summary-list li { margin-bottom: 4px; }
+        .success-container { text-align: center; padding: 40px 20px; }
+        .success-icon { font-size: 3rem; color: var(--success); margin-bottom: 20px; }
+        .hidden { display: none; }
+        .error-msg { color: #ff4444; font-size: 0.8rem; margin-top: 5px; display: none; }
+        .input-error { border-color: #ff4444 !important; }
+        .btn-primary.sending { position: relative; color: transparent !important; pointer-events: none; }
+        .btn-primary.sending::after {
+            content: ""; position: absolute; width: 16px; height: 16px;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            border: 2px solid rgba(255,255,255,0.3); border-top-color: white;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Request Your Vinyl Pressing Quote</h1>
+        <p class="subtitle">Fill out the details below to get a personalized quote for your vinyl release. Review your choices at the end before submitting.</p>
+    </header>
+    <div class="container">
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            <div class="step-indicator"><span id="step-text">Step 1 of 3</span></div>
+        </div>
+        <form id="quoteForm" onsubmit="return false;">
+            <!-- STEP 1 -->
+            <div class="form-section active" id="step-1">
+                <h2 class="section-title">Vinyl Specifications</h2>
+                <div class="form-group">
+                    <label>Size</label>
+                    <select id="size" name="size" required>
+                        <option value="12''">12'' (Standard LP)</option>
+                        <option value="10''" disabled>10'' (Coming Soon)</option>
+                        <option value="7''" disabled>7'' (Coming Soon)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Release Type</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="releaseType" value="1x LP" checked><span class="radio-btn">1x LP</span></label>
+                        <label class="radio-option"><input type="radio" name="releaseType" value="2x LP"><span class="radio-btn">2x LP</span></label>
+                        <label class="radio-option"><input type="radio" name="releaseType" value="3x LP"><span class="radio-btn">3x LP</span></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <select id="quantity" name="quantity" required>
+                        <option value="" disabled selected>Select Quantity</option>
+                        <option value="100">100</option><option value="200">200</option><option value="300">300</option>
+                        <option value="500">500</option><option value="1000">1000</option><option value="2000">2000</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Weight</label>
+                    <select id="weight" name="weight" required>
+                        <option value="180g">180g (Standard)</option>
+                        <option value="140g" disabled>140g (Coming Soon)</option>
+                        <option value="110g" disabled>110g (Coming Soon)</option>
+                        <option value="70g" disabled>70g (Coming Soon)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Mastering</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="mastering" value="You guys do it" checked><span class="radio-btn">You guys do it</span></label>
+                        <label class="radio-option"><input type="radio" name="mastering" value="Just check"><span class="radio-btn">Just check if ok</span></label>
+                        <label class="radio-option"><input type="radio" name="mastering" value="We got it"><span class="radio-btn">We got it</span></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Test Pressings</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="testPress" value="3 test pressings" checked><span class="radio-btn">3 Test Pressings</span></label>
+                        <label class="radio-option"><input type="radio" name="testPress" value="None"><span class="radio-btn">None</span></label>
+                    </div>
+                </div>
+                <div class="btn-container">
+                    <button class="btn-primary" style="margin-left: auto;" onclick="nextStep(1)">Next: Visuals &rarr;</button>
+                </div>
+            </div>
+            <!-- STEP 2 -->
+            <div class="form-section" id="step-2">
+                <h2 class="section-title">Visuals & Packaging</h2>
+                <div class="form-group">
+                    <label>Vinyl Color (Standard)</label>
+                    <span class="helper-text">Select one or multiple</span>
+                    <div class="color-grid" id="standard-colors"></div>
+                </div>
+                <div class="form-group">
+                    <label>Vinyl Color (Special/Metallic)</label>
+                    <span class="helper-text">Select one or multiple</span>
+                    <div class="color-grid" id="special-colors"></div>
+                </div>
+                <div class="form-group">
+                    <label>Inner Sleeve</label>
+                    <select id="innerSleeve" name="sleeve">
+                        <option value="Black polylined">Black polylined</option><option value="White polylined">White polylined</option>
+                        <option value="Black/white paper only">Black/white paper only</option><option value="Single color">Single color</option><option value="Printed">Printed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Jacket Style</label>
+                    <select id="jacket" name="jacket">
+                        <option value="Standard (single)">Standard (single)</option><option value="Gatefold Double LP">Gatefold Double LP</option>
+                        <option value="Single Gatefold">Single Gatefold</option><option value="Single Jacket Double LP">Single Jacket Double LP</option><option value="Disco Jacket">Disco Jacket</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cover Varnish</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="varnish" value="Matt" checked><span class="radio-btn">Matt</span></label>
+                        <label class="radio-option"><input type="radio" name="varnish" value="Gloss"><span class="radio-btn">Gloss</span></label>
+                        <label class="radio-option"><input type="radio" name="varnish" value="Special"><span class="radio-btn">Special</span></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Cover Print</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="print" value="Full color print" checked><span class="radio-btn">Full Color</span></label>
+                        <label class="radio-option"><input type="radio" name="print" value="Black & White print"><span class="radio-btn">B&W</span></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Cover Extras</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option"><input type="checkbox" name="extras" value="Obi strip"><span class="checkbox-btn">Obi Strip</span></label>
+                        <label class="checkbox-option"><input type="checkbox" name="extras" value="Sticker"><span class="checkbox-btn">Sticker</span></label>
+                        <label class="checkbox-option"><input type="checkbox" name="extras" value="Special"><span class="checkbox-btn">Special</span></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Sleeve Protection</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="protection" value="Polypropylene sealbag" checked><span class="radio-btn">Poly Sealbag</span></label>
+                        <label class="radio-option"><input type="radio" name="protection" value="Corn-based bio sealbag"><span class="radio-btn">Bio Sealbag</span></label>
+                        <label class="radio-option"><input type="radio" name="protection" value="Hard poly jacket matt"><span class="radio-btn">Hard Poly Matt</span></label>
+                    </div>
+                </div>
+                <div class="btn-container">
+                    <button class="btn-secondary" onclick="prevStep(2)">&larr; Back</button>
+                    <button class="btn-primary" onclick="nextStep(2)">Next: Contact &rarr;</button>
+                </div>
+            </div>
+            <!-- STEP 3 -->
+            <div class="form-section" id="step-3">
+                <h2 class="section-title">Contact & Details</h2>
+                <div class="form-group">
+                    <label for="artistName">Artist / Label Name <span style="color:var(--accent)">*</span></label>
+                    <input type="text" id="artistName" name="artist" placeholder="e.g. The Midnight Echoes" required>
+                    <div class="error-msg" id="artist-error">Please enter your name</div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address <span style="color:var(--accent)">*</span></label>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                    <div class="error-msg" id="email-error">Please enter a valid email</div>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Notes / Additional Info</label>
+                    <textarea id="notes" name="notes" placeholder="Any specific deadlines, artwork details, or questions?"></textarea>
+                </div>
+                <div class="btn-container">
+                    <button class="btn-secondary" onclick="prevStep(3)">&larr; Back</button>
+                    <button class="btn-primary" onclick="showSummary()">Review Request &rarr;</button>
+                </div>
+            </div>
+            <!-- STEP 4: Summary -->
+            <div class="form-section" id="step-summary">
+                <h2 class="section-title">Review Your Quote</h2>
+                <p style="margin-bottom: 20px; color: var(--text-muted);">Please review your selections below. Click "Submit Request" to send your quote inquiry.</p>
+                <div class="summary-grid" id="summary-content"></div>
+                <div class="btn-container">
+                    <button class="btn-secondary" onclick="prevStep('summary')">&larr; Edit</button>
+                    <button type="button" class="btn-primary" id="submitBtn" onclick="submitForm()">Submit Request</button>
+                </div>
+            </div>
+            <!-- STEP 5: Success -->
+            <div class="form-section" id="step-success">
+                <div class="success-container">
+                    <div class="success-icon">✓</div>
+                    <h2>Thanks!</h2>
+                    <p style="margin-bottom: 20px;">Your request has been sent. We will get back to you soon with your personalized quote.</p>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">A confirmation email is on its way to your inbox.</p>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script>
+        const standardColors = [
+            { name: "Classic Black", hex: "#000000" }, { name: "Red", hex: "#D00000" },
+            { name: "Transparent Red", hex: "#FF4D4D" }, { name: "Orange", hex: "#FF8C00" },
+            { name: "Transparent Orange", hex: "#FFA500" }, { name: "Blue", hex: "#0000FF" },
+            { name: "Transparent Blue", hex: "#4D4DFF" }, { name: "Turquoise", hex: "#40E0D0" },
+            { name: "Natural Green", hex: "#006400" }, { name: "Smoky Green", hex: "#2F4F4F" },
+            { name: "Forest Green", hex: "#228B22" }, { name: "Transparent Green", hex: "#00FF00" },
+            { name: "Transparent Lime", hex: "#32CD32" }, { name: "Yellow", hex: "#FFFF00" },
+            { name: "Hot Yellow", hex: "#FFD700" }, { name: "Transparent Yellow", hex: "#FFFFE0" },
+            { name: "Purple", hex: "#800080" }, { name: "Magenta", hex: "#FF00FF" },
+            { name: "Transparent Magenta", hex: "#FF69B4" }, { name: "Pink", hex: "#FFC0CB" },
+            { name: "Transparent Pink", hex: "#FFB6C1" }, { name: "Transparent Violet", hex: "#EE82EE" },
+            { name: "White", hex: "#FFFFFF" }, { name: "Natural (Clear)", hex: "#F0F8FF" },
+            { name: "Creamy White", hex: "#FFFDD0" }
+        ];
+        const specialColors = [
+            { name: "Crystal Transparent", hex: "#E0FFFF" }, { name: "Total Clear", hex: "#F5F5F5" },
+            { name: "Pure Gold", hex: "#D4AF37" }, { name: "Silver", hex: "#C0C0C0" },
+            { name: "Stone Grey", hex: "#708090" }, { name: "Earth Brown", hex: "#8B4513" },
+            { name: "Rusty Red", hex: "#B7410E" }, { name: "Neon Green", hex: "#39FF14" },
+            { name: "Olive Green", hex: "#808000" }, { name: "Transparent Forest", hex: "#006400" },
+            { name: "Transparent Turquoise", hex: "#40E0D0" }, { name: "Bubble Gum Pink", hex: "#FFC1CC" },
+            { name: "Snow White", hex: "#FFFAFA" }, { name: "Glass Transparent", hex: "#F0FFFF" }
+        ];
+        let currentStep = 1; const totalSteps = 3;
+        function renderColors(containerId, colors) {
+            const container = document.getElementById(containerId);
+            colors.forEach((color, index) => {
+                const div = document.createElement('div'); div.className = 'color-option';
+                div.innerHTML = `<input type="checkbox" name="${containerId}" value="${color.name}" id="${containerId}-${index}"><label for="${containerId}-${index}" class="swatch" style="background-color: ${color.hex};"></label><div class="color-label">${color.name}</div>`;
+                container.appendChild(div);
+            });
+        }
+        renderColors('standard-colors', standardColors); renderColors('special-colors', specialColors);
+        function updateProgress() {
+            const fill = document.getElementById('progress-fill'), text = document.getElementById('step-text'),
+                  progressContainer = document.getElementById('progress-container');
+            if (currentStep === 'summary' || currentStep === 'success') { progressContainer.style.display = 'none'; return; }
+            progressContainer.style.display = 'block';
+            fill.style.width = `${(currentStep / totalSteps) * 100}%`;
+            text.innerText = `Step ${currentStep} of ${totalSteps}`;
+        }
+        function showSection(id) {
+            document.querySelectorAll('.form-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active'); window.scrollTo(0, 0);
+        }
+        function nextStep(step) {
+            if (step === 1 && !document.getElementById('quantity').value) { alert("Please select a quantity."); return; }
+            currentStep = step + 1; updateProgress(); showSection(`step-${currentStep}`);
+        }
+        function prevStep(step) {
+            currentStep = (step === 'summary') ? 3 : step - 1;
+            updateProgress(); showSection(`step-${currentStep}`);
+        }
+        function showSummary() {
+            const artist = document.getElementById('artistName').value.trim(),
+                  email = document.getElementById('email').value.trim();
+            let valid = true;
+            if (!artist) { document.getElementById('artist-error').style.display = 'block'; document.getElementById('artistName').classList.add('input-error'); valid = false; }
+            else { document.getElementById('artist-error').style.display = 'none'; document.getElementById('artistName').classList.remove('input-error'); }
+            if (!email || !email.includes('@')) { document.getElementById('email-error').style.display = 'block'; document.getElementById('email').classList.add('input-error'); valid = false; }
+            else { document.getElementById('email-error').style.display = 'none'; document.getElementById('email').classList.remove('input-error'); }
+            if (!valid) return;
+            const data = {
+                size: document.getElementById('size').value, type: document.querySelector('input[name="releaseType"]:checked').value,
+                qty: document.getElementById('quantity').value, weight: document.getElementById('weight').value,
+                mastering: document.querySelector('input[name="mastering"]:checked').value,
+                testPress: document.querySelector('input[name="testPress"]:checked').value,
+                stdColors: Array.from(document.querySelectorAll('#standard-colors input:checked')).map(cb => cb.value),
+                specColors: Array.from(document.querySelectorAll('#special-colors input:checked')).map(cb => cb.value),
+                sleeve: document.getElementById('innerSleeve').value, jacket: document.getElementById('jacket').value,
+                varnish: document.querySelector('input[name="varnish"]:checked').value,
+                print: document.querySelector('input[name="print"]:checked').value,
+                extras: Array.from(document.querySelectorAll('input[name="extras"]:checked')).map(cb => cb.value),
+                protection: document.querySelector('input[name="protection"]:checked').value,
+                artist, email, notes: document.getElementById('notes').value
+            };
+            document.getElementById('summary-content').innerHTML = `
+                <div class="summary-item"><div class="summary-label">Specs</div><div class="summary-value">${data.size} • ${data.type} • ${data.qty} units • ${data.weight}</div>
+                <div style="margin-top:10px;font-size:0.85rem;color:#aaa;">Mastering: ${data.mastering}</div><div style="font-size:0.85rem;color:#aaa;">Test Press: ${data.testPress}</div></div>
+                <div class="summary-item"><div class="summary-label">Colors</div><ul class="summary-list">
+                ${data.stdColors.length ? '<li>Standard: ' + data.stdColors.join(', ') + '</li>' : '<li>Standard: None</li>'}
+                ${data.specColors.length ? '<li>Special: ' + data.specColors.join(', ') + '</li>' : ''}</ul></div>
+                <div class="summary-item"><div class="summary-label">Packaging</div><div class="summary-value">${data.jacket}</div>
+                <div style="margin-top:5px;font-size:0.85rem;color:#aaa;">Sleeve: ${data.sleeve}</div><div style="font-size:0.85rem;color:#aaa;">Varnish: ${data.varnish} | Print: ${data.print}</div>
+                ${data.extras.length ? `<div style="font-size:0.85rem;color:#aaa;">Extras: ${data.extras.join(', ')}</div>` : ''}<div style="font-size:0.85rem;color:#aaa;">Protection: ${data.protection}</div></div>
+                <div class="summary-item"><div class="summary-label">Contact</div><div class="summary-value">${data.artist}</div><div style="font-size:0.85rem;color:#aaa;">${data.email}</div>
+                ${data.notes ? `<div style="margin-top:10px;font-style:italic;color:#aaa;">"${data.notes}"</div>` : ''}</div>`;
+            currentStep = 'summary'; updateProgress(); showSection('step-summary');
+        }
+        function submitForm() {
+            const btn = document.getElementById('submitBtn'), originalText = btn.innerText;
+            btn.classList.add('sending'); btn.disabled = true;
+            const templateParams = {
+                artist: document.getElementById('artistName').value.trim(), email: document.getElementById('email').value.trim(),
+                notes: document.getElementById('notes').value.trim(), size: document.getElementById('size').value,
+                type: document.querySelector('input[name="releaseType"]:checked').value, qty: document.getElementById('quantity').value,
+                weight: document.getElementById('weight').value, mastering: document.querySelector('input[name="mastering"]:checked').value,
+                test_press: document.querySelector('input[name="testPress"]:checked').value,
+                std_colors: Array.from(document.querySelectorAll('#standard-colors input:checked')).map(cb => cb.value).join(', ') || 'None',
+                spec_colors: Array.from(document.querySelectorAll('#special-colors input:checked')).map(cb => cb.value).join(', ') || 'None',
+                jacket: document.getElementById('jacket').value, sleeve: document.getElementById('innerSleeve').value,
+                varnish: document.querySelector('input[name="varnish"]:checked').value,
+                print: document.querySelector('input[name="print"]:checked').value,
+                extras: Array.from(document.querySelectorAll('input[name="extras"]:checked')).map(cb => cb.value).join(', ') || 'None',
+                protection: document.querySelector('input[name="protection"]:checked').value,
+                to_email: 'anna.d.spasova@gmail.com',
+                submitted_at: new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+            };
+            emailjs.send('service_yvab589', 'template_5748lnu', templateParams)
+              .then((response) => {
+                console.log('✅ Email sent!', response); btn.innerText = "Submitted! ✓";
+                setTimeout(() => { currentStep = 'success'; updateProgress(); showSection('step-success'); }, 1000);
+              })
+              .catch((error) => {
+                console.error('❌ EmailJS Error:', error);
+                alert('Sorry, there was an error sending your request.\n\nPlease try again or contact us directly at anna.d.spasova@gmail.com');
+                btn.classList.remove('sending'); btn.innerText = originalText; btn.disabled = false;
+              });
+        }
+    </script>
+</body>
+</html>
