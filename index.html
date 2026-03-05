@@ -411,7 +411,7 @@
                 print: document.querySelector('input[name="print"]:checked').value,
                 extras: Array.from(document.querySelectorAll('input[name="extras"]:checked')).map(cb => cb.value).join(', ') || 'None',
                 protection: document.querySelector('input[name="protection"]:checked').value,
-                to_email: 'anna.d.spasova@gmail.com',
+                to_email: 'anna.spasova.fb@gmail.com',
                 submitted_at: new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
             };
             emailjs.send('service_yvab589', 'template_5748lnu', templateParams)
@@ -428,3 +428,4 @@
     </script>
 </body>
 </html>
+
